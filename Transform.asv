@@ -9,7 +9,7 @@ properties
 end 
 
 methods 
-    function this = Transform(x,y,z,rotationInfo) 
+    function this = Transform(x,y,z,q) 
         if nargin == 0
             this.x = 0; 
             this.y = 0; 
@@ -24,11 +24,13 @@ methods
             this.x = x; 
             this.y = y; 
             this.z = z; 
-            if isa(rotationInfo,'quaternion')
-                this.q = rotationInfo; 
+            if isa(q,'quaternion')
+                this.q = q; 
             elseif all(size(rotationInfo) == [3,3])
-                this.q = quaternion(rotationInfo, 'rotmat', 'frame'); 
+                this.q = quaternion(rotationInfo, 'rotmat',); 
             end
+            assert(isa(q,'quaternion'), 'q is not a quaternion!');
+            this.q = q;
         end 
     end 
     
@@ -89,15 +91,6 @@ methods
         hXdir.XData = [X, X+mat(1,1)]; hXdir.YData = [Y, Y+mat(2,1)]; hXdir.ZData = [Z, Z+mat(3,1)]; 
         hYdir.XData = [X, X+mat(1,2)]; hYdir.YData = [Y, Y+mat(2,2)]; hYdir.ZData = [Z, Z+mat(3,2)];
         hZdir.XData = [X, X+mat(1,3)]; hZdir.YData = [Y, Y+mat(2,3)]; hZdir.ZData = [Z, Z+mat(3,3)];
-    end
-end
-
-methods (Static)
-    function matInv = Inverse(mat)
-        matInv = zeros(4); 
-        matInv(4,4) = 1; 
-        matInv(1:3,1:3) = mat(1:3,1:3)'; 
-        matInv(1:3,4) = -matInv(1:3,1:3) * mat(1:3,4);
     end
 end 
     
