@@ -48,7 +48,7 @@ cos4 = ((p(1)+L5)^2 + p(2)^2 + p(3)^2 - L3^2 - L4^2)/(2*L3*L4);
 temp = 1 - cos4^2;
 if temp < 0
     temp = 0;
-    disp('Waning: Unable to reach desired end-effector position/orientation');
+%     disp('Waning: Unable to reach desired end-effector position/orientation');
 end
 
 th4 = atan2(sqrt(temp),cos4);
@@ -56,14 +56,14 @@ th4 = atan2(sqrt(temp),cos4);
 temp = (p(1)+L5)^2+p(2)^2;
 if temp < 0
     temp = 0;
-    disp('Warning: Unable to reach desired end-effector position/orientation');
+%     disp('Warning: Unable to reach desired end-effector position/orientation');
 end
 th5 = atan2(-p(3),sqrt(temp))-atan2(sin(th4)*L3,cos(th4)*L3+L4);
 th6 = atan2(p(2),-p(1)-L5);
 temp = 1-(sin(th6)*a(1)+cos(th6)*a(2))^2;
 if temp < 0
     temp = 0;
-    disp('Warning: Unable to reach desired end-effector position/orientation');
+%     disp('Warning: Unable to reach desired end-effector position/orientation');
 end
 th2 = atan2(-sqrt(temp),sin(th6)*a(1)+cos(6)*a(2));
 th2 = th2 + pi/2; % pi/2 offset
