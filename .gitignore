@@ -1,4 +1,5 @@
 slprj/ 
 *.slxc
 archive/
-*.r2019b
+
+*.autosave
