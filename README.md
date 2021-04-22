@@ -23,13 +23,40 @@ Figure: Movement of the LIPM.
 ## Capture Point Algorithm 
 In this repository I try to explain a walking trajectory generator based on Capture Point. This is an algorithm described in Englsberger's [Bipedal walking control based on Capture Point Dynamics](https://ieeexplore.ieee.org/document/6094435) that uses the capture point concept to generate trajectory based on desired next plant foot position. You will see how easy it is to generate trajectory on the fly to make the robot go forwards, backwards, and sideways by whatever distance (of course within reasonable limits) with this algorithm. I consider this as the second key paper that is necessary for understanding walking robot (of course after Kajita's paper). This paper builds on the LIPM and Capture Point (independently introduced by [Pratt et al.](https://www.cs.cmu.edu/~cga/legs/Pratt_Goswami_Humanoids2006.pdf) and [Hof](https://pubmed.ncbi.nlm.nih.gov/17935808/)) for bipedal walking control. 
 
-So what is a capture point? Capture point is "the point on the floor onto which the robot has to step to come to a complete rest"\[Englsberger\]. So for the given pendulum there is a capture point depending on its state (position and velocity), and if you place next base of the pendulum (also known as the zero moment point ZMP) the pendulum will come to a complete rest.   
+So what is a capture point? Capture point is "the point on the floor onto which the robot has to step to come to a complete rest"\[Englsberger\]. So for the given pendulum there is a capture point depending on its state (position and velocity), and if you place next base of the pendulum (also known as the zero moment point ZMP) the pendulum will come to a complete rest. 
+
+```matlab
+cpointx = xc + dxc/w; % xc: current x position, dxc: current x velocity
+cpointy = yc + dyc/w; % yc: current y position, dyc: current y velocity 
+```
 
 ![CapturePointStop](/MediaFiles/CapturePointStop.gif)
 
 Figure: Pendulum coming to a complete rest after moving its base to the capture point. 
 
-The explanation of the algorithm is explained with MATLAB livescript that contains visualizations to help readers understand. Then to illustrate the point that this algorithm can be used on an actual robot (which probably is used in many humanoid robots today), I fed the trajectory from algorithm to the robot in Simulink simulation. 
+So how does capture point help us create a walking trajectory on the fly? This is where the capture point control law comes into play. For a given capture point (this describes the current state of the pendulum) and a desired capture point at the end of step (this describes where you want to put the next plant foot), you can find what the next ZMP (zero moment point, which is the base of the pendulum). 
+```matlab 
+function px = findZMP(w, dT, cpdesired, cpcurrent)
+    b = exp(w*dT); 
+    px = 1/(1-b)*cpdesired - b/(1-b)*cpcurrent; 
+end
+```
+
+"So... What is the capture point, desired capture point, and ZMP?" So ZMP is where you want the base of the pendulum to be. You will be using this to generate the trajectory at each step. Current capture point is something that describes the current state (you can think of this as the observer state, in other words, this is just a different way of describing what position and velocity is). Desired capture point is where you want your next foot to be. 
+
+"Aren't desired capture point and ZMP the same thing then?" Not quite. Desired capture point describes where the actual robot foot is going to be with an offset (in my example, there is no offset and desired capture point is where the actual foot it. In the paper, the foot is located at an offset of the capture point). The ZMP is the base of the pendulum that will be somewhere inside the boundary of the foot. So capture point is the actual foot location, and ZMP is the actual pendulum base location. They are close to each other but not quite the same. 
+
+![CapturePointAndZMP](/MediaFiles/CapturePointAndZMP.png)
+
+Figure: Red circle is ZMP and Blue rectangle is the desired capture point
+
+Now the keys are all there. All we need to do to move the robot wherever we want is to come up with the desired foot positions (desired capture points) and calculate the ZMP based on the control law shown earlier. 
+
+![CapturePointTrajectory](/MediaFiles/CPTrajectory.gif)
+
+Figure: Trajectory based on LIPM using Capture Point control law to find next base 
+
+Once this is done, we can automate the process a little bit by using Stateflow. Stateflow calculates the trajectory based on the input from the Xbox controller. 
 
 ![DemoSimulation](/MediaFiles/DemoGIF.gif)
 
